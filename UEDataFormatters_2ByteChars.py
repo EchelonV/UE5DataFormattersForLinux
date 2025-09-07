@@ -718,6 +718,24 @@ class UEMapSynthProvider:
 def UEMapSummaryProvider(valobj,dict):
     return 'size=%s' % valobj.GetNumChildren()
 
+def UEVectorSummaryProvider(valobj, internal_dict):
+    try:
+        x = valobj.GetChildMemberWithName("X").GetValue()
+        y = valobj.GetChildMemberWithName("Y").GetValue()
+        z = valobj.GetChildMemberWithName("Z").GetValue()
+        return f"({x}, {y}, {z})"
+    except:
+        return "<invalid FVector>"
+
+def UERotatorSummaryProvider(valobj, internal_dict):
+    try:
+        x = valobj.GetChildMemberWithName("Pitch").GetValue()
+        y = valobj.GetChildMemberWithName("Yaw").GetValue()
+        z = valobj.GetChildMemberWithName("Roll").GetValue()
+        return f"(Pitch: {x}, Yaw: {y}, Roll: {z})"
+    except:
+        return "<invalid FRotator>"
+
 def __lldb_init_module(debugger,dict):
     debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UETCharSummaryProvider -e TCHAR -w UEDataFormatters')
     debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UESignedCharSummaryProvider -e "signed char *" -w UEDataFormatters')
@@ -726,13 +744,6 @@ def __lldb_init_module(debugger,dict):
     debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEFNameSummaryProvider -e -x "FName$" -w UEDataFormatters')
     debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEFNameSummaryProvider -e -x "FMinimalName$" -w UEDataFormatters')
     debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEUObjectBaseSummaryProvider -e -x "UObject.*" -w UEDataFormatters')
-    debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEUObjectBaseSummaryProvider -e -x "^U[A-Z].*" -w UEDataFormatters')
-
-    #debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEUObjectBaseSummaryProvider -e UActorComponent -w UEDataFormatters')
-    #debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEUObjectBaseSummaryProvider -e UPrimitiveComponent -w UEDataFormatters')
-    #debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEUObjectBaseSummaryProvider -e UMeshComponent -w UEDataFormatters')
-    #debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEUObjectBaseSummaryProvider -e USkeletalMeshComponent -w UEDataFormatters')
-
     debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEUObjectBaseSummaryProvider UObjectBase -w UEDataFormatters')
     debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEUObjectBaseSummaryProvider -e UObjectBaseUtility -w UEDataFormatters')
     debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEFFieldClassSummaryProvider -e FFieldClass -w UEDataFormatters')
@@ -756,4 +767,10 @@ def __lldb_init_module(debugger,dict):
     debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEMapSummaryProvider -e -x "TMapBase<.+>$" -w UEDataFormatters')
     debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEUObjectBaseSummaryProvider UObjectBase')
     debugger.HandleCommand("type category enable UEDataFormatters")
+
+    # Wildcard for all UObjects
+    debugger.HandleCommand('type summary add -F UEDataFormatters_2ByteChars.UEUObjectBaseSummaryProvider -e -x "^U[A-Z].*" -w UEDataFormatters')
+    #FVector and FRotator
+    debugger.HandleCommand('type summary add FVector -F UEDataFormatters_2ByteChars.UEVectorSummaryProvider')
+    debugger.HandleCommand('type summary add FRotator -F UEDataFormatters_2ByteChars.UERotatorSummaryProvider')
 
